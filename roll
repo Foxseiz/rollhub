@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roll Hub</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: #f9fafb; }
+    header { background: #111827; color: white; padding: 20px; }
+    nav button { margin: 5px; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
+    nav button.active { background: #2563eb; color: white; }
+    section { display: none; padding: 20px; }
+    section.active { display: block; }
+    button.action { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 8px; margin: 10px; cursor: pointer; font-size: 16px; }
+    .result { font-size: 24px; margin-top: 20px; }
+    input { padding: 8px; width: 60%; border-radius: 6px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎲 Roll Hub 🎲</h1>
+    <nav>
+      <button onclick="showTab('dice')" id="diceTab" class="active">Dice</button>
+      <button onclick="showTab('coin')" id="coinTab">Coin</button>
+      <button onclick="showTab('duck')" id="duckTab">Duck Race</button>
+    </nav>
+  </header>
+
+  <!-- Dice Section -->
+  <section id="dice" class="active">
+    <h2>Dice Roller 🎲</h2>
+    <button class="action" onclick="rollDice(6)">Roll a d6</button>
+    <button class="action" onclick="rollDice(20)">Roll a d20</button>
+    <button class="action" onclick="rollCustomDice()">Custom Dice</button>
+    <br>
+    <input type="number" id="customSides" placeholder="Enter sides (e.g. 10)">
+    <div class="result" id="diceResult"></div>
+  </section>
+
+  <!-- Coin Section -->
+  <section id="coin">
+    <h2>Coin Flip 🪙</h2>
+    <button class="action" onclick="flipCoin()">Flip Coin</button>
+    <div class="result" id="coinResult"></div>
+  </section>
+
+  <!-- Duck Race Section -->
+  <section id="duck">
+    <h2>Duck Race 🦆</h2>
+    <input id="names" placeholder="Enter names separated by commas">
+    <br>
+    <button class="action" onclick="duckRace()">Start Race</button>
+    <div class="result" id="duckResult"></div>
+  </section>
+
+  <script>
+    function showTab(tab) {
+      document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      document.getElementById(tab + 'Tab').classList.add('active');
+    }
+
+    function rollDice(sides) {
+      const roll = Math.floor(Math.random() * sides) + 1;
+      document.getElementById("diceResult").innerText = `You rolled: ${roll}`;
+    }
+
+    function rollCustomDice() {
+      const sides = parseInt(document.getElementById("customSides").value);
+      if (isNaN(sides) || sides < 2) {
+        document.getElementById("diceResult").innerText = "Enter a valid number of sides (min 2).";
+        return;
+      }
+      rollDice(sides);
+    }
+
+    function flipCoin() {
+      const flip = Math.random() < 0.5 ? "Heads" : "Tails";
+      document.getElementById("coinResult").innerText = `Coin landed on: ${flip}`;
+    }
+
+    function duckRace() {
+      const input = document.getElementById("names").value;
+      const players = input.split(",").map(p => p.trim()).filter(Boolean);
+      if (players.length < 2) {
+        document.getElementById("duckResult").innerText = "Add at least 2 names!";
+        return;
+      }
+      const winner = players[Math.floor(Math.random() * players.length)];
+      document.getElementById("duckResult").innerText = `🏆 Winner is: ${winner}!`;
+    }
+  </script>
+</body>
+</html>
