@@ -136,31 +136,43 @@
       let tickCount = 0;
 
       const raceInterval = setInterval(() => {
-        tickCount++;
+      let raceFinished = false;
+    
+      players.forEach((_, i) => {
+        const duck = document.getElementById("duck" + i);
+        const newPos = Math.min(
+          parseFloat(duck.style.left) + stepPerTick * speeds[i],
+          trackWidth - finishLineWidth - 40
+        );
+        duck.style.left = newPos + "px";
+    
+        // Declare winner immediately if a duck reaches finish line
+        if (newPos >= trackWidth - finishLineWidth - 40 && !raceFinished) {
+          raceFinished = true;
+          clearInterval(raceInterval);
+          document.getElementById("duckResult").innerText =
+            "🏆 Winner is: " + players[i] + "!";
+        }
+      });
+    
+      tickCount++;
+      if (tickCount >= totalTicks && !raceFinished) {
+        // If no duck reached finish, pick farthest
+        let maxPos = 0;
+        let winnerIndex = 0;
         players.forEach((_, i) => {
           const duck = document.getElementById("duck" + i);
-          const newPos = Math.min(
-            parseFloat(duck.style.left) + stepPerTick * speeds[i],
-            trackWidth - finishLineWidth - 40
-          );
-          duck.style.left = newPos + "px";
+          const pos = parseFloat(duck.style.left);
+          if (pos > maxPos) {
+            maxPos = pos;
+            winnerIndex = i;
+          }
         });
-
-        if (tickCount >= totalTicks) {
-          clearInterval(raceInterval);
-          let maxPos = 0;
-          let winnerIndex = 0;
-          players.forEach((_, i) => {
-            const duck = document.getElementById("duck" + i);
-            const pos = parseFloat(duck.style.left);
-            if (pos > maxPos) {
-              maxPos = pos;
-              winnerIndex = i;
-            }
-          });
-          document.getElementById("duckResult").innerText = "🏆 Winner is: " + players[winnerIndex] + "!";
-        }
-      }, intervalMs);
+        document.getElementById("duckResult").innerText =
+          "🏆 Winner is: " + players[winnerIndex] + "!";
+        clearInterval(raceInterval);
+      }
+    }, intervalMs);
     }
   </script>
 </body>
