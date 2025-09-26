@@ -25,6 +25,7 @@
       left: 0px;
       top: 50%;
       transform: translateY(-50%);
+      transition: left 0.1s linear; /* smooth movement */
     }
 
     .duckContainer .duck {
@@ -171,7 +172,6 @@
         players.forEach((_, i) => {
           const container = document.getElementById("duckContainer" + i);
           let currentLeft = parseFloat(container.style.left) || 0;
-
           const twist = (Math.random() - 0.5) * 5;
           const newLeft = Math.min(currentLeft + baseSpeed * speeds[i] + twist, trackWidth - finishLineWidth - 40);
           container.style.left = newLeft + "px";
