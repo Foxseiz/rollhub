@@ -57,19 +57,32 @@
   <style>
     #raceTrack {
       margin-top: 20px;
-      text-align: left;
+      position: relative;
+      width: 600px; /* track width */
+      margin-left: auto;
+      margin-right: auto;
+      border: 2px solid #ccc;
+      background: #f3f4f6;
     }
     .lane {
       position: relative;
-      height: 40px;
+      height: 50px;
       border-bottom: 1px dashed #ccc;
     }
     .duck {
       position: absolute;
       left: 0;
-      top: 0;
-      font-size: 30px;
+      top: 5px;
+      font-size: 28px;
       transition: left 0.3s ease;
+    }
+    .finish-line {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 5px;
+      background: red;
     }
   </style>
   
@@ -89,7 +102,12 @@
       raceTrack.innerHTML = "";
       document.getElementById("duckResult").innerText = "";
   
-      // Create lanes
+      // Add finish line
+      const finishLine = document.createElement("div");
+      finishLine.className = "finish-line";
+      raceTrack.appendChild(finishLine);
+  
+      // Create lanes and ducks
       players.forEach((player, i) => {
         const lane = document.createElement("div");
         lane.className = "lane";
@@ -97,14 +115,14 @@
         const duck = document.createElement("div");
         duck.className = "duck";
         duck.innerText = "🦆 " + player;
-        duck.style.top = "5px";
+        duck.style.left = "0px";
         duck.id = "duck" + i;
   
         lane.appendChild(duck);
         raceTrack.appendChild(lane);
       });
   
-      // Start the race
+      // Start race
       raceInterval = setInterval(() => {
         players.forEach((_, i) => {
           const duck = document.getElementById("duck" + i);
@@ -112,8 +130,8 @@
           let move = Math.floor(Math.random() * 20); // random step
           duck.style.left = currentLeft + move + "px";
   
-          // Check if duck reached finish line (e.g. 500px)
-          if (currentLeft + move >= 500) {
+          // Check if duck crosses finish line
+          if (currentLeft + move >= 560) { // 600px width - 40px buffer
             clearInterval(raceInterval);
             document.getElementById("duckResult").innerText =
               "🏆 Winner is: " + players[i] + "!";
