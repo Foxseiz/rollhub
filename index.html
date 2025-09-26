@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Foxseiz Roll Hub</title>
+  <title>Roll Hub</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: #f9fafb; }
     header { background: #111827; color: white; padding: 20px; }
@@ -15,17 +15,35 @@
     .result { font-size: 24px; margin-top: 20px; }
     input { padding: 8px; width: 60%; border-radius: 6px; border: 1px solid #ccc; }
     #raceTrack { margin-top: 20px; position: relative; width: 600px; margin-left: auto; margin-right: auto; border: 2px solid #ccc; background: #f3f4f6; height: auto; }
-    .duckContainer { position: absolute; display: flex; align-items: center; left: 0px; }
-    .duckContainer .duck { font-size: 28px; transform: scaleX(-1); margin-left: 5px; }
+
+    .lane { position: relative; height: 50px; border-bottom: 1px dashed #ccc; }
+
+    .duckContainer {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      left: 0px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .duckContainer .duck {
+      font-size: 28px;
+      transform: scaleX(-1);
+      margin-left: 5px;
+    }
+
     .finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 5px; background: red; }
+
     #coinContainer { margin-top:20px; font-size:50px; display:inline-block; }
+
     @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(720deg); } }
     .spin { animation: spin 2s linear; }
   </style>
 </head>
 <body>
   <header>
-    <h1>🎲 Roll Hub 🎲</h1>
+    <h1>🎲 Foxseiz Roll Hub 🎲</h1>
     <nav>
       <button onclick="showTab('dice')" id="diceTab" class="active">Dice</button>
       <button onclick="showTab('coin')" id="coinTab">Coin</button>
@@ -120,10 +138,12 @@
       raceTrack.appendChild(finishLine);
 
       players.forEach((player, i) => {
+        const lane = document.createElement("div");
+        lane.className = "lane";
+
         const container = document.createElement("div");
         container.className = "duckContainer";
         container.id = "duckContainer" + i;
-        container.style.top = `${i * laneHeight}px`;
         container.style.left = "0px";
 
         const name = document.createElement("div");
@@ -135,7 +155,8 @@
 
         container.appendChild(name);
         container.appendChild(duck);
-        raceTrack.appendChild(container);
+        lane.appendChild(container);
+        raceTrack.appendChild(lane);
       });
 
       const baseSpeed = (trackWidth - finishLineWidth - 40) / (duration * 30);
