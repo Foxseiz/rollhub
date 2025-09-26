@@ -53,7 +53,7 @@
     <h2>Duck Race 🦆</h2>
     <input id="names" placeholder="Enter names separated by commas">
     <br>
-    <input type="number" id="raceDuration" placeholder="Race duration in seconds" value="5">
+    <input type="number" id="raceDuration" placeholder="Race duration in seconds">
     <br>
     <button class="action" onclick="startTimedDuckRace()">Start Timed Race</button>
     <div id="raceTrack"></div>
@@ -124,6 +124,19 @@
 
         lane.appendChild(duck);
         raceTrack.appendChild(lane);
+      });
+
+      // At the start, create speed multipliers
+      const speeds = players.map(() => 0.8 + Math.random() * 0.4); // each duck moves 80% to 120% of base speed
+      
+      // In the interval loop:
+      players.forEach((_, i) => {
+        const duck = document.getElementById("duck" + i);
+        const newPos = Math.min(
+          parseFloat(duck.style.left) + stepPerTick * speeds[i],
+          trackWidth - finishLineWidth - 40
+        );
+        duck.style.left = newPos + "px";
       });
 
       const fps = 30;
