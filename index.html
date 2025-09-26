@@ -49,9 +49,80 @@
     <h2>Duck Race 🦆</h2>
     <input id="names" placeholder="Enter names separated by commas">
     <br>
-    <button class="action" onclick="duckRace()">Start Race</button>
+    <button class="action" onclick="startDuckRace()">Start Race</button>
+    <div id="raceTrack"></div>
     <div class="result" id="duckResult"></div>
   </section>
+  
+  <style>
+    #raceTrack {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .lane {
+      position: relative;
+      height: 40px;
+      border-bottom: 1px dashed #ccc;
+    }
+    .duck {
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 30px;
+      transition: left 0.3s ease;
+    }
+  </style>
+  
+  <script>
+    let raceInterval;
+  
+    function startDuckRace() {
+      const input = document.getElementById("names").value;
+      const players = input.split(",").map(p => p.trim()).filter(Boolean);
+  
+      if (players.length < 2) {
+        document.getElementById("duckResult").innerText = "Add at least 2 names!";
+        return;
+      }
+  
+      const raceTrack = document.getElementById("raceTrack");
+      raceTrack.innerHTML = "";
+      document.getElementById("duckResult").innerText = "";
+  
+      // Create lanes
+      players.forEach((player, i) => {
+        const lane = document.createElement("div");
+        lane.className = "lane";
+  
+        const duck = document.createElement("div");
+        duck.className = "duck";
+        duck.innerText = "🦆 " + player;
+        duck.style.top = "5px";
+        duck.id = "duck" + i;
+  
+        lane.appendChild(duck);
+        raceTrack.appendChild(lane);
+      });
+  
+      // Start the race
+      raceInterval = setInterval(() => {
+        players.forEach((_, i) => {
+          const duck = document.getElementById("duck" + i);
+          let currentLeft = parseInt(duck.style.left || 0);
+          let move = Math.floor(Math.random() * 20); // random step
+          duck.style.left = currentLeft + move + "px";
+  
+          // Check if duck reached finish line (e.g. 500px)
+          if (currentLeft + move >= 500) {
+            clearInterval(raceInterval);
+            document.getElementById("duckResult").innerText =
+              "🏆 Winner is: " + players[i] + "!";
+          }
+        });
+      }, 300);
+    }
+  </script>
+
 
   <script>
     function showTab(tab) {
