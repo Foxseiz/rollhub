@@ -15,9 +15,13 @@
     .result { font-size: 24px; margin-top: 20px; }
     input { padding: 8px; width: 60%; border-radius: 6px; border: 1px solid #ccc; }
     #raceTrack { margin-top: 20px; position: relative; width: 600px; margin-left: auto; margin-right: auto; border: 2px solid #ccc; background: #f3f4f6; }
-    .lane { position: relative; height: 50px; border-bottom: 1px dashed #ccc; }
-    .duck { position: absolute; left: 0; top: 5px; font-size: 28px; transition: left 0.1s linear; }
+    .lane { position: relative; height: 50px; border-bottom: 1px dashed #ccc; display: flex; align-items: center; }
+    .playerName { width: 100px; text-align: left; margin-right: 10px; }
+    .duck { position: absolute; font-size: 28px; transition: left 0.1s linear; left: 0px; }
     .finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 5px; background: red; }
+    #coinContainer { margin-top:20px; font-size:50px; display:inline-block; }
+    @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(720deg); } }
+    .spin { animation: spin 2s linear; }
   </style>
 </head>
 <body>
@@ -45,6 +49,7 @@
   <section id="coin">
     <h2>Coin Flip 🪙</h2>
     <button class="action" onclick="flipCoin()">Flip Coin</button>
+    <div id="coinContainer">🪙</div>
     <div class="result" id="coinResult"></div>
   </section>
 
@@ -83,8 +88,17 @@
     }
 
     function flipCoin() {
-      const flip = Math.random() < 0.5 ? "Heads" : "Tails";
-      document.getElementById("coinResult").innerText = `Coin landed on: ${flip}`;
+      const coinContainer = document.getElementById("coinContainer");
+      const coinResult = document.getElementById("coinResult");
+      coinResult.innerText = "";
+      coinContainer.classList.add("spin");
+
+      setTimeout(() => {
+        coinContainer.classList.remove("spin");
+        const flip = Math.random() < 0.5 ? "Heads" : "Tails";
+        coinResult.innerText = `Coin landed on: ${flip}`;
+        coinContainer.innerText = flip === "Heads" ? "🪙" : "🪙";
+      }, 2000);
     }
 
     function startTimedDuckRace() {
@@ -105,74 +119,67 @@
       const finishLineWidth = 5;
       const laneHeight = 50;
 
-      // Add finish line
       const finishLine = document.createElement("div");
       finishLine.className = "finish-line";
       raceTrack.appendChild(finishLine);
 
-      // Create lanes and ducks
       players.forEach((player, i) => {
         const lane = document.createElement("div");
         lane.className = "lane";
-        lane.style.height = laneHeight + "px";
+
+        const name = document.createElement("div");
+        name.className = "playerName";
+        name.innerText = player;
 
         const duck = document.createElement("div");
         duck.className = "duck";
-        duck.innerText = player + " 🦆";
-        duck.style.left = "0px";
+        duck.innerText = "🦆";
         duck.id = "duck" + i;
+        duck.style.left = "0px";
 
+        lane.appendChild(name);
         lane.appendChild(duck);
         raceTrack.appendChild(lane);
       });
 
-      // Assign random speed multiplier for each duck
+      const baseSpeed = (trackWidth - finishLineWidth - 40) / (duration * 30);
       const speeds = players.map(() => 0.8 + Math.random() * 0.4);
 
-      const fps = 30;
-      const intervalMs = 1000 / fps;
-      const totalTicks = duration * fps;
-      const stepPerTick = (trackWidth - finishLineWidth - 40) / totalTicks;
       let tickCount = 0;
+      const totalTicks = duration * 30;
 
       const raceInterval = setInterval(() => {
-      let raceFinished = false;
-    
-      players.forEach((_, i) => {
-        const duck = document.getElementById("duck" + i);
-        const newPos = Math.min(
-          parseFloat(duck.style.left) + stepPerTick * speeds[i],
-          trackWidth - finishLineWidth - 40
-        );
-        duck.style.left = newPos + "px";
-    
-        // Declare winner immediately if a duck reaches finish line
-        if (newPos >= trackWidth - finishLineWidth - 40 && !raceFinished) {
-          raceFinished = true;
-          clearInterval(raceInterval);
-          document.getElementById("duckResult").innerText =
-            "🏆 Winner is: " + players[i] + "!";
-        }
-      });
-    
-      tickCount++;
-      if (tickCount >= totalTicks && !raceFinished) {
-        // If no duck reached finish, pick farthest
-        let maxPos = 0;
-        let winnerIndex = 0;
+        let raceFinished = false;
+
         players.forEach((_, i) => {
           const duck = document.getElementById("duck" + i);
-          const pos = parseFloat(duck.style.left);
-          if (pos > maxPos) {
-            maxPos = pos;
-            winnerIndex = i;
+          let currentLeft = parseFloat(duck.style.left) || 0;
+
+          // Random twist each tick to allow catching up or falling behind
+          const twist = (Math.random() - 0.5) * 5;
+          const newLeft = Math.min(currentLeft + baseSpeed * speeds[i] + twist, trackWidth - finishLineWidth - 40);
+          duck.style.left = newLeft + "px";
+
+          if (newLeft >= trackWidth - finishLineWidth - 40 && !raceFinished) {
+            raceFinished = true;
+            clearInterval(raceInterval);
+            document.getElementById("duckResult").innerText = "🏆 Winner is: " + players[i] + "!";
           }
         });
-        document.getElementById("duckResult").innerText =
-          "🏆 Winner is: " + players[winnerIndex] + "!";
-        clearInterval(raceInterval);
-      }
-    }, intervalMs);
+
+        tickCount++;
+        if (tickCount >= totalTicks && !raceFinished) {
+          let maxLeft = 0;
+          let winnerIndex = 0;
+          players.forEach((_, i) => {
+            const duck = document.getElementById("duck" + i);
+            const left = parseFloat(duck.style.left);
+            if (left > maxLeft) { maxLeft = left; winnerIndex = i; }
+          });
+          document.getElementById("duckResult").innerText = "🏆 Winner is: " + players[winnerIndex] + "!";
+          clearInterval(raceInterval);
+        }
+      }, 1000/30);
     }
   </script>
 </body>
