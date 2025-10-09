@@ -1,214 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roll Hub</title>
-<style>
-  body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: #f9fafb; }
-  header { background: #111827; color: white; padding: 20px; }
-  nav button { margin: 5px; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
-  nav button.active { background: #2563eb; color: white; }
-  section { display: none; padding: 20px; }
-  section.active { display: block; }
-  button.action { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 8px; margin: 10px; cursor: pointer; font-size: 16px; }
-  .result { font-size: 24px; margin-top: 20px; }
-  input { padding: 8px; width: 60%; border-radius: 6px; border: 1px solid #ccc; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roll Hub</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: #f9fafb; }
+    header { background: #111827; color: white; padding: 20px; }
+    nav button { margin: 5px; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
+    nav button.active { background: #2563eb; color: white; }
+    section { display: none; padding: 20px; }
+    section.active { display: block; }
+    button.action { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 8px; margin: 10px; cursor: pointer; font-size: 16px; }
+    .result { font-size: 24px; margin-top: 20px; }
+    input { padding: 8px; width: 60%; border-radius: 6px; border: 1px solid #ccc; }
 
-  /* Duck Race */
-  #raceTrack { margin: 20px auto; width: 600px; border: 2px solid #ccc; background: #f3f4f6; min-height: 120px; position: relative; }
-  .lane { position: relative; height: 50px; border-bottom: 1px dashed #ccc; overflow: visible; }
-  .duckContainer { position: absolute; display: flex; align-items: center; gap: 5px; transition: left 0.1s linear; }
-  .duck { font-size: 28px; transform: scaleX(-1); animation: swim 0.8s ease-in-out infinite alternate; position: relative; z-index: 2; }
-  @keyframes swim { 0% { transform: translateY(0px) scaleX(-1); } 100% { transform: translateY(-4px) scaleX(-1); } }
-  .finish-line { position: absolute; right: 0; top: 0; height: 100%; width: 5px; background: red; }
+    /* Duck Race Styles */
+    #raceTrack {
+      margin-top: 20px;
+      position: relative;
+      width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      border: 2px solid #ccc;
+      background: #f3f4f6;
+      height: auto;
+    }
 
-  .splash { position: absolute; font-size: 18px; opacity: 0.7; pointer-events: none; animation: fade 0.5s linear forwards; z-index: 1; }
-  @keyframes fade { 0% { opacity: 0.7; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-10px) scale(0.5); } }
+    .lane {
+      position: relative;
+      height: 50px;
+      border-bottom: 1px dashed #ccc;
+      overflow: visible; /* allows names to overflow left side */
+    }
 
-  /* Coin Flip */
-  #coinContainer { margin-top:20px; font-size:50px; display:inline-block; transform-style: preserve-3d; }
-  @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(1080deg); } }
-  .spin { animation: spin 2s ease-in-out; }
+    .duckContainer {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 5px;
+      left: 0px;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: left 0.1s linear;
+    }
 
-  footer { margin-top: 30px; padding: 10px; background: #111827; color: white; font-size: 14px; }
-</style>
+    .duckContainer .duck {
+      font-size: 28px;
+      transform: scaleX(-1); /* facing right */
+      animation: swim 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes swim {
+      0% { transform: translateY(0px) scaleX(-1); }
+      100% { transform: translateY(-3px) scaleX(-1); }
+    }
+
+    .finish-line {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 5px;
+      background: red;
+    }
+
+    /* Coin Flip */
+    #coinContainer { margin-top: 20px; font-size: 50px; display: inline-block; }
+    @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(720deg); } }
+    .spin { animation: spin 2s linear; }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>🎲 Foxseiz Roll Hub 🎲</h1>
+    <nav>
+      <button onclick="showTab('dice')" id="diceTab" class="active">Dice</button>
+      <button onclick="showTab('coin')" id="coinTab">Coin</button>
+      <button onclick="showTab('duck')" id="duckTab">Duck Race</button>
+    </nav>
+  </header>
 
-<header>
-  <h1>🎲 Foxseiz Roll Hub 🎲</h1>
-  <nav>
-    <button onclick="showTab('dice')" id="diceTab" class="active">Dice</button>
-    <button onclick="showTab('coin')" id="coinTab">Coin</button>
-    <button onclick="showTab('duck')" id="duckTab">Duck Race</button>
-  </nav>
-</header>
+  <!-- Dice Roller -->
+  <section id="dice" class="active">
+    <h2>Dice Roller 🎲</h2>
+    <button class="action" onclick="rollDice(6)">Roll a d6</button>
+    <button class="action" onclick="rollDice(20)">Roll a d20</button>
+    <button class="action" onclick="rollCustomDice()">Custom Dice</button>
+    <br>
+    <input type="number" id="customSides" placeholder="Enter sides (e.g. 10)">
+    <div class="result" id="diceResult"></div>
+  </section>
 
-<!-- Dice -->
-<section id="dice" class="active">
-  <h2>Dice Roller 🎲</h2>
-  <button class="action" onclick="rollDice(6)">Roll a d6</button>
-  <button class="action" onclick="rollDice(20)">Roll a d20</button>
-  <button class="action" onclick="rollCustomDice()">Custom Dice</button>
-  <br>
-  <input type="number" id="customSides" placeholder="Enter sides (e.g. 10)">
-  <div class="result" id="diceResult"></div>
-</section>
+  <!-- Coin Flip -->
+  <section id="coin">
+    <h2>Coin Flip 🪙</h2>
+    <button class="action" onclick="flipCoin()">Flip Coin</button>
+    <div id="coinContainer">🪙</div>
+    <div class="result" id="coinResult"></div>
+  </section>
 
-<!-- Coin -->
-<section id="coin">
-  <h2>Coin Flip 🪙</h2>
-  <button class="action" onclick="flipCoin()">Flip Coin</button>
-  <div id="coinContainer">🪙</div>
-  <div class="result" id="coinResult"></div>
-</section>
+  <!-- Duck Race -->
+  <section id="duck">
+    <h2>Duck Race 🦆</h2>
+    <input id="names" placeholder="Enter names separated by commas">
+    <br>
+    <input type="number" id="raceDuration" placeholder="Race duration in seconds" value="5">
+    <br>
+    <button class="action" onclick="startTimedDuckRace()">Start Timed Race</button>
+    <div id="raceTrack"></div>
+    <div class="result" id="duckResult"></div>
+  </section>
 
-<!-- Duck Race -->
-<section id="duck">
-  <h2>Duck Race 🦆</h2>
-  <input id="names" placeholder="Enter names separated by commas">
-  <br>
-  <input type="number" id="raceDuration" placeholder="Race duration in seconds" value="5">
-  <br>
-  <button class="action" onclick="startTimedDuckRace()">Start Timed Race</button>
-  <div id="raceTrack"></div>
-  <div class="result" id="duckResult"></div>
-</section>
-
-<footer>Roll Hub Version 1.2</footer>
-
-<script>
-function showTab(tab){
-  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById(tab).classList.add('active');
-  document.getElementById(tab+'Tab').classList.add('active');
-}
-
-// Dice
-function rollDice(s){ document.getElementById("diceResult").innerText=`You rolled: ${Math.floor(Math.random()*s)+1}`; }
-function rollCustomDice(){
-  const s=parseInt(document.getElementById("customSides").value);
-  if(isNaN(s)||s<2){document.getElementById("diceResult").innerText="Enter valid sides (min 2)"; return;}
-  rollDice(s);
-}
-
-// Coin
-function flipCoin(){
-  const container=document.getElementById("coinContainer");
-  const result=document.getElementById("coinResult");
-  result.innerText="";
-  container.classList.add("spin");
-  setTimeout(()=>{
-    container.classList.remove("spin");
-    const flip=Math.random()<0.5?"Heads":"Tails";
-    container.innerText="🪙";
-    result.innerText=`Coin landed on: ${flip}`;
-  },2000);
-}
-
-// Duck Race
-const duckColors=["#f87171","#facc15","#34d399","#60a5fa","#a78bfa","#fb923c","#f472b6","#4ade80"];
-function getRandomColor(){ return duckColors[Math.floor(Math.random()*duckColors.length)]; }
-
-function updateDuckPreview(){
-  const input=document.getElementById("names").value;
-  const players=input.split(",").map(p=>p.trim()).filter(Boolean);
-  const track=document.getElementById("raceTrack");
-  track.innerHTML="";
-  const displayPlayers=players.length>=2?players:["Player 1","Player 2"];
-
-  const finishLine=document.createElement("div");
-  finishLine.className="finish-line";
-  track.appendChild(finishLine);
-
-  displayPlayers.forEach(player=>{
-    const lane=document.createElement("div");
-    lane.className="lane";
-
-    const nameDiv=document.createElement("div");
-    nameDiv.innerText=player;
-    nameDiv.style.color=getRandomColor();
-    nameDiv.style.fontWeight="bold";
-    nameDiv.style.position="absolute";
-    nameDiv.style.left="-150px";
-    nameDiv.style.whiteSpace="nowrap";
-
-    const duck=document.createElement("div");
-    duck.innerText="🦆";
-    duck.style.fontSize="28px";
-    duck.style.position="absolute";
-    duck.style.left="0px";
-    duck.style.top="50%";
-    duck.style.transform="translateY(-50%) scaleX(-1)";
-    duck.style.transition="left 0.1s linear";
-    duck.className="duck";
-
-    lane.appendChild(nameDiv);
-    lane.appendChild(duck);
-    track.appendChild(lane);
-  });
-}
-document.getElementById("names").addEventListener("input", updateDuckPreview);
-
-// Start Race
-function startTimedDuckRace(){
-  const input=document.getElementById("names").value;
-  const players=input.split(",").map(p=>p.trim()).filter(Boolean);
-  const displayPlayers=players.length>=2?players:["Player 1","Player 2"];
-  const duration=parseFloat(document.getElementById("raceDuration").value);
-  if(isNaN(duration)||duration<=0){document.getElementById("duckResult").innerText="Enter valid duration!"; return;}
-
-  const track=document.getElementById("raceTrack");
-  const lanes=track.querySelectorAll(".lane");
-  const trackWidth=600, finishLineWidth=5;
-  const baseSpeed=(trackWidth-finishLineWidth-40)/(duration*30);
-  const speeds=displayPlayers.map(()=>0.8+Math.random()*0.4);
-
-  let tick=0, totalTicks=duration*30;
-
-  const raceInterval=setInterval(()=>{
-    let finished=false;
-    lanes.forEach((lane,i)=>{
-      const duck=lane.querySelector(".duck");
-      let left=parseFloat(duck.style.left)||0;
-      const twist=(Math.random()-0.5)*3;
-      const newLeft=Math.min(left+baseSpeed*speeds[i]+twist,trackWidth-finishLineWidth-40);
-      duck.style.left=newLeft+"px";
-
-      // Splash
-      const splash=document.createElement("div");
-      splash.className="splash";
-      splash.style.left=newLeft+"px";
-      splash.style.top="50%";
-      splash.innerText="💦";
-      lane.appendChild(splash);
-      setTimeout(()=>splash.remove(),500);
-
-      if(newLeft>=trackWidth-finishLineWidth-40&&!finished){
-        finished=true;
-        clearInterval(raceInterval);
-        document.getElementById("duckResult").innerText="🏆 Winner is: "+displayPlayers[i]+"!";
-      }
-    });
-
-    tick++;
-    if(tick>=totalTicks&&!finished){
-      let max=0, winner=0;
-      lanes.forEach((lane,i)=>{
-        const duck=lane.querySelector(".duck");
-        const l=parseFloat(duck.style.left);
-        if(l>max){max=l; winner=i;}
-      });
-      document.getElementById("duckResult").innerText="🏆 Winner is: "+displayPlayers[winner]+"!";
-      clearInterval(raceInterval);
+  <script>
+    // --- Navigation ---
+    function showTab(tab) {
+      document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      document.getElementById(tab + 'Tab').classList.add('active');
     }
-  },1000/30);
-}
 
-// Initialize preview
-updateDuckPreview();
-</script>
+    // --- Dice Roller ---
+    function rollDice(sides) {
+      const roll = Math.floor(Math.random() * sides) + 1;
+      document.getElementById("diceResult").innerText = `You rolled: ${roll}`;
+    }
+
+    function rollCustomDice() {
+      const sides = parseInt(document.getElementById("customSides").value);
+      if (isNaN(sides) || sides < 2) {
+        document.getElementById("diceResult").innerText = "Enter a valid number of sides (min 2).";
+        return;
+      }
+      rollDice(sides);
+    }
+
+    // --- Coin Flip ---
+    function flipCoin() {
+      const coinContainer = document.getElementById("coinContainer");
+      const coinResult = document.getElementById("coinResult");
+      coinResult.innerText = "";
+      coinContainer.classList.add("spin");
+
+      setTimeout(() => {
+        coinContainer.classList.remove("spin");
+        const flip = Math.random() < 0.5 ? "Heads" : "Tails";
+        coinResult.innerText = `Coin landed on: ${flip}`;
+      }, 2000);
+    }
+
+    // --- Duck Race ---
+    const duckColors = ["#f87171","#facc15","#34d399","#60a5fa","#a78bfa","#fb923c","#f472b6","#4ade80"];
+
+    function getRandomColor() {
+      return duckColors[Math.floor(Math.random() * duckColors.length)];
+    }
+
+    // Live preview when typing names
+    function updateDuckPreview() {
+      const input = document.getElementById("names").value;
+      const players = input.split(",").map(p => p.trim()).filter(Boolean);
+      const raceTrack = document.getElementById("raceTrack");
+      raceTrack.innerHTML = "";
+
+      if (players.length === 0) return;
+
+      const finishLine = document.createElement("div");
+      finishLine.className = "finish-line";
+      raceTrack.appendChild(finishLine);
+
+      players.forEach(player => {
+        const lane = document.createElement("div");
+        lane.className = "lane";
+
+        const container = document.createElement("div");
+        container.className = "duckContainer";
+        container.style.left = "0px";
+
+        const duck = document.createElement("div");
+        duck.className = "duck";
+        duck.innerText = "🦆";
+
+        const name = document.createElement("div");
+        name.innerText = player;
+        name.style.color = getRandomColor();
+        name.style.fontWeight = "bold";
+        name.style.marginRight = "10px";
+        name.style.whiteSpace = "nowrap";
+
+        container.appendChild(name);
+        container.appendChild(duck);
+        lane.appendChild(container);
+        raceTrack.appendChild(lane);
+      });
+    }
+
+    document.getElementById("names").addEventListener("input", updateDuckPreview);
+
+    function startTimedDuckRace() {
+      const input = document.getElementById("names").value;
+      const players = input.split(",").map(p => p.trim()).filter(Boolean);
+      const duration = parseFloat(document.getElementById("raceDuration").value);
+
+      if (players.length < 2 || isNaN(duration) || duration <= 0) {
+        document.getElementById("duckResult").innerText = "Add at least 2 names and valid duration!";
+        return;
+      }
+
+      const raceTrack = document.getElementById("raceTrack");
+      raceTrack.innerHTML = "";
+      document.getElementById("duckResult").innerText = "";
+
+      const trackWidth = 600;
+      const finishLineWidth = 5;
+
+      const finishLine = document.createElement("div");
+      finishLine.className = "finish-line";
+      raceTrack.appendChild(finishLine);
+
+      const playerColors = players.map(() => getRandomColor());
+
+      players.forEach((player, i) => {
+        const lane = document.createElement("div");
+        lane.className = "lane";
+
+        const container = document.createElement("div");
+        container.className = "duckContainer";
+        container.id = "duckContainer" + i;
+        container.style.left = "0px";
+
+        const duck = document.createElement("div");
+        duck.className = "duck";
+        duck.innerText = "🦆";
+
+        const name = document.createElement("div");
+        name.innerText = player;
+        name.style.color = playerColors[i];
+        name.style.fontWeight = "bold";
+        name.style.marginRight = "10px";
+        name.style.whiteSpace = "nowrap";
+
+        container.appendChild(name);
+        container.appendChild(duck);
+        lane.appendChild(container);
+        raceTrack.appendChild(lane);
+      });
+
+      const baseSpeed = (trackWidth - finishLineWidth - 40) / (duration * 30);
+      const speeds = players.map(() => 0.8 + Math.random() * 0.4);
+
+      let tickCount = 0;
+      const totalTicks = duration * 30;
+
+      const raceInterval = setInterval(() => {
+        let raceFinished = false;
+
+        players.forEach((_, i) => {
+          const container = document.getElementById("duckContainer" + i);
+          let currentLeft = parseFloat(container.style.left) || 0;
+          const twist = (Math.random() - 0.5) * 3;
+          const newLeft = Math.min(currentLeft + baseSpeed * speeds[i] + twist, trackWidth - finishLineWidth - 40);
+          container.style.left = newLeft + "px";
+
+          if (newLeft >= trackWidth - finishLineWidth - 40 && !raceFinished) {
+            raceFinished = true;
+            clearInterval(raceInterval);
+            document.getElementById("duckResult").innerText = "🏆 Winner is: " + players[i] + "!";
+          }
+        });
+
+        tickCount++;
+        if (tickCount >= totalTicks && !raceFinished) {
+          let maxLeft = 0;
+          let winnerIndex = 0;
+          players.forEach((_, i) => {
+            const container = document.getElementById("duckContainer" + i);
+            const left = parseFloat(container.style.left);
+            if (left > maxLeft) { maxLeft = left; winnerIndex = i; }
+          });
+          document.getElementById("duckResult").innerText = "🏆 Winner is: " + players[winnerIndex] + "!";
+          clearInterval(raceInterval);
+        }
+      }, 1000 / 30);
+    }
+  </script>
 </body>
 </html>
