@@ -267,16 +267,23 @@ function startTimedDuckRace() {
     players.forEach((_, i) => {
       const container = document.getElementById("duckContainer" + i);
       const duckWidth = container.querySelector(".duck").offsetWidth;
+    
+      // set a target position
+      const targetLeft = trackWidth - finishLineWidth - duckWidth;
+    
+      // gradually move currentLeft toward target
       let currentLeft = parseFloat(container.style.left) || 0;
-      const twist = (Math.random() - 0.5) * 1.5; // smoother
-      const newLeft = Math.min(currentLeft + baseSpeed * speeds[i] + twist, trackWidth - finishLineWidth - duckWidth);
-
-      container.style.left = newLeft + "px";
-
-      if (newLeft >= trackWidth - finishLineWidth - duckWidth && !raceFinished) {
+      let speed = baseSpeed * speeds[i];
+    
+      // optional twist factor (small random chance)
+      let twist = (Math.random() - 0.5) * 0.3; // very subtle
+    
+      currentLeft = Math.min(currentLeft + speed + twist, targetLeft);
+      container.style.left = currentLeft + "px";
+    
+      if (currentLeft >= targetLeft && !raceFinished) {
         raceFinished = true;
         clearInterval(raceInterval);
-        raceInterval = null;
         document.getElementById("duckResult").innerText = "🏆 Winner is: " + players[i] + "!";
       }
     });
