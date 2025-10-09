@@ -103,19 +103,18 @@
   <br>
   <input type="number" id="raceDuration" placeholder="Race duration in seconds" value="5">
   <br>
-  <button class="action" onclick="startTimedDuckRace()">Start</button>
-  <button class="action" onclick="resetDuckRace()">Reset</button>
+  <button class="action" onclick="startTimedDuckRace()">Start Timed Race</button>
+  <button class="action" onclick="resetDuckRace()">Reset Race</button>
   <div id="raceTrack"></div>
   <div class="result" id="duckResult"></div>
 </section>
 
 <footer>
-  Version 0.21
+  Version 0.22
 </footer>
 
 <script>
 let raceAnimation = null;
-let raceStartTime = null;
 let racePlayers = [];
 
 const duckColors = ["#f87171","#facc15","#34d399","#60a5fa","#a78bfa","#fb923c","#f472b6","#4ade80"];
@@ -222,13 +221,12 @@ function startTimedDuckRace() {
   finishLine.className = "finish-line";
   raceTrack.appendChild(finishLine);
 
-  racePlayers = players.map((player, i) => {
+  racePlayers = players.map((player) => {
     const lane = document.createElement("div");
     lane.className = "lane";
 
     const container = document.createElement("div");
     container.className = "duckContainer";
-    container.id = "duckContainer" + i;
     container.style.left = "0px";
 
     const duck = document.createElement("div");
@@ -249,31 +247,33 @@ function startTimedDuckRace() {
     raceTrack.appendChild(lane);
 
     return {
-      name: player,
+      name,
       container,
       currentLeft: 0,
-      speed: (trackWidth - finishLineWidth) / (duration * 60) * (0.8 + Math.random() * 0.4),
+      baseSpeed: (trackWidth - finishLineWidth) / (duration * 60),
+      dynamicSpeed: 1 + Math.random() * 0.4
     };
   });
 
-  raceStartTime = null;
+  let raceFinished = false;
 
-  function animate(timestamp) {
-    if (!raceStartTime) raceStartTime = timestamp;
-    const elapsed = (timestamp - raceStartTime) / 1000; // seconds
-
+  function animate() {
+    if (raceFinished) return;
     let winner = null;
 
     racePlayers.forEach(p => {
-      if (!winner) {
-        p.currentLeft += p.speed + (Math.random() - 0.5) * 0.3;
-        const maxLeft = trackWidth - finishLineWidth - 40;
-        if (p.currentLeft >= maxLeft) {
-          p.currentLeft = maxLeft;
-          winner = p.name;
-        }
-        p.container.style.left = p.currentLeft + "px";
+      // gradually vary speed to simulate race twists
+      p.dynamicSpeed += (Math.random() - 0.5) * 0.02; 
+      p.dynamicSpeed = Math.max(0.5, Math.min(1.5, p.dynamicSpeed));
+
+      p.currentLeft += p.baseSpeed * p.dynamicSpeed;
+      const maxLeft = trackWidth - finishLineWidth - 40;
+      if (p.currentLeft >= maxLeft && !winner) {
+        p.currentLeft = maxLeft;
+        winner = p.name.innerText;
+        raceFinished = true;
       }
+      p.container.style.left = p.currentLeft + "px";
     });
 
     if (winner) {
@@ -294,7 +294,6 @@ function resetDuckRace() {
   });
   document.getElementById("duckResult").innerText = "";
 }
-
 </script>
 </body>
 </html>
