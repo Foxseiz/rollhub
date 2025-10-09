@@ -5,22 +5,76 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roll Hub</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: #f9fafb; padding-bottom: 50px; }
-  header { background: #111827; color: white; padding: 20px; }
-  nav button { margin: 5px; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
-  nav button.active { background: #2563eb; color: white; }
-  section { display: none; padding: 20px; }
-  section.active { display: block; }
-  button.action { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 8px; margin: 10px; cursor: pointer; font-size: 16px; }
-  .result { font-size: 24px; margin-top: 20px; }
-  input { padding: 8px; width: 60%; border-radius: 6px; border: 1px solid #ccc; }
+  body { 
+    font-family: Arial, sans-serif; 
+    text-align: center; 
+    margin: 0; 
+    padding: 0; 
+    background: #f9fafb; 
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+  }
 
+  header { 
+    background: #111827; 
+    color: white; 
+    padding: 20px; 
+  }
+
+  nav button { 
+    margin: 5px; 
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+  }
+
+  nav button.active { 
+    background: #2563eb; 
+    color: white; 
+  }
+
+  section { 
+    display: none; 
+    padding: 20px; 
+    flex: 1; 
+  }
+
+  section.active { 
+    display: block; 
+  }
+
+  button.action { 
+    background: #2563eb; 
+    color: white; 
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 8px; 
+    margin: 10px; 
+    cursor: pointer; 
+    font-size: 16px; 
+  }
+
+  .result { 
+    font-size: 24px; 
+    margin-top: 20px; 
+  }
+
+  input { 
+    padding: 8px; 
+    width: 60%; 
+    border-radius: 6px; 
+    border: 1px solid #ccc; 
+  }
+
+  /* Duck Race */
   #raceTrack {
     margin-top: 20px;
     position: relative;
     width: 80vw;
     max-width: 1000px;
-    min-width: 400px;
+    min-width: 360px;
     margin-left: auto;
     margin-right: auto;
     border: 2px solid #ccc;
@@ -40,7 +94,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    left: 0px;
+    left: 0;
     top: 50%;
     transform: translateY(-50%);
   }
@@ -48,6 +102,12 @@
   .duckContainer .duck {
     font-size: 28px;
     transform: scaleX(-1);
+  }
+
+  .duckName {
+    font-weight: bold;
+    white-space: nowrap;
+    margin-right: 8px;
   }
 
   .finish-line {
@@ -59,14 +119,30 @@
     background: red;
   }
 
+  /* Coin flip */
+  #coinContainer { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    margin-top: 10px; 
+  }
+
+  #coinFace {
+    font-size: 48px;
+    display: inline-block;
+    transition: transform 1s ease;
+  }
+
   footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+    margin-top: auto;
     background: #111827;
     color: white;
     padding: 10px 0;
     font-size: 14px;
+  }
+
+  @media(max-width: 400px){
+    input { width: 90%; }
   }
 </style>
 </head>
@@ -93,8 +169,10 @@
 <section id="coin">
   <h2>Coin Flip 🪙</h2>
   <button class="action" onclick="flipCoin()">Flip Coin</button>
-  <div id="coinContainer">🪙</div>
-  <div class="result" id="coinResult"></div>
+  <div id="coinContainer">
+    <div id="coinFace">🪙</div>
+    <div class="result" id="coinResult"></div>
+  </div>
 </section>
 
 <section id="duck">
@@ -103,90 +181,83 @@
   <br>
   <input type="number" id="raceDuration" placeholder="Race duration in seconds" value="5">
   <br>
-  <button class="action" onclick="startTimedDuckRace()">Start Timed Race</button>
-  <button class="action" onclick="resetDuckRace()">Reset Race</button>
+  <button class="action" onclick="startTimedDuckRace()">Start</button>
+  <button class="action" onclick="resetDuckRace()">Reset</button>
   <div id="raceTrack"></div>
   <div class="result" id="duckResult"></div>
 </section>
 
-<footer>
-  Version 0.21
-</footer>
+<footer>Version 0.23</footer>
 
 <script>
 let raceAnimation = null;
 let racePlayers = [];
-
 const duckColors = ["#f87171","#facc15","#34d399","#60a5fa","#a78bfa","#fb923c","#f472b6","#4ade80"];
 
-function showTab(tab) {
+function showTab(tab){
   document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
   document.getElementById(tab).classList.add('active');
-  document.getElementById(tab + 'Tab').classList.add('active');
+  document.getElementById(tab+'Tab').classList.add('active');
 }
 
-function rollDice(sides) {
-  const roll = Math.floor(Math.random() * sides) + 1;
+function rollDice(sides){
+  const roll = Math.floor(Math.random()*sides)+1;
   document.getElementById("diceResult").innerText = `You rolled: ${roll}`;
 }
 
-function rollCustomDice() {
+function rollCustomDice(){
   const sides = parseInt(document.getElementById("customSides").value);
-  if (isNaN(sides) || sides < 2) {
-    document.getElementById("diceResult").innerText = "Enter a valid number of sides (min 2).";
+  if(isNaN(sides) || sides < 2){
+    document.getElementById("diceResult").innerText="Enter valid number (min 2)";
     return;
   }
   rollDice(sides);
 }
 
-function flipCoin() {
-  const coinContainer = document.getElementById("coinContainer");
+function flipCoin(){
+  const coinFace = document.getElementById("coinFace");
   const coinResult = document.getElementById("coinResult");
-  coinResult.innerText = "";
-  coinContainer.classList.add("spin");
-  setTimeout(() => {
-    coinContainer.classList.remove("spin");
-    const flip = Math.random() < 0.5 ? "Heads" : "Tails";
-    coinResult.innerText = `Coin landed on: ${flip}`;
-  }, 2000);
+  coinResult.innerText="";
+  coinFace.style.transform = "rotateY(0deg)";
+  setTimeout(()=> coinFace.style.transform = "rotateY(1080deg)",50);
+  setTimeout(()=>{
+    const outcome = Math.random()<0.5?"Heads":"Tails";
+    coinResult.innerText = `Coin landed on: ${outcome}`;
+  },1050);
 }
 
-function getRandomColor() {
-  return duckColors[Math.floor(Math.random() * duckColors.length)];
+function getRandomColor(){
+  return duckColors[Math.floor(Math.random()*duckColors.length)];
 }
 
-function updateDuckPreview() {
+function updateDuckPreview(){
   const input = document.getElementById("names").value;
-  const players = input.split(",").map(p => p.trim()).filter(Boolean);
+  const players = input.split(",").map(p=>p.trim()).filter(Boolean);
   const raceTrack = document.getElementById("raceTrack");
-  raceTrack.innerHTML = "";
-
-  if (players.length === 0) return;
+  raceTrack.innerHTML="";
+  if(players.length===0) return;
 
   const finishLine = document.createElement("div");
-  finishLine.className = "finish-line";
+  finishLine.className="finish-line";
   raceTrack.appendChild(finishLine);
 
-  players.forEach(player => {
+  players.forEach(player=>{
     const lane = document.createElement("div");
-    lane.className = "lane";
+    lane.className="lane";
 
-    const container = document.createElement("div");
-    container.className = "duckContainer";
-    container.style.left = "0px";
+    const container=document.createElement("div");
+    container.className="duckContainer";
+    container.style.left="0px";
 
-    const duck = document.createElement("div");
-    duck.className = "duck";
-    duck.innerText = "🦆";
+    const duck=document.createElement("div");
+    duck.className="duck";
+    duck.innerText="🦆";
 
-    const name = document.createElement("div");
-    name.innerText = player;
-    name.style.color = getRandomColor();
-    name.style.fontWeight = "bold";
-    name.style.position = "absolute";
-    name.style.left = "-200px";
-    name.style.whiteSpace = "nowrap";
+    const name=document.createElement("div");
+    name.className="duckName";
+    name.innerText=player;
+    name.style.color=getRandomColor();
 
     container.appendChild(name);
     container.appendChild(duck);
@@ -198,48 +269,44 @@ function updateDuckPreview() {
 document.getElementById("names").addEventListener("input", updateDuckPreview);
 updateDuckPreview();
 
-function startTimedDuckRace() {
-  const input = document.getElementById("names").value;
-  const players = input.split(",").map(p => p.trim()).filter(Boolean);
-  const duration = parseFloat(document.getElementById("raceDuration").value);
-
-  if (players.length < 2 || isNaN(duration) || duration <= 0) {
-    document.getElementById("duckResult").innerText = "Add at least 2 names and valid duration!";
+function startTimedDuckRace(){
+  const input=document.getElementById("names").value;
+  const players=input.split(",").map(p=>p.trim()).filter(Boolean);
+  const duration=parseFloat(document.getElementById("raceDuration").value);
+  if(players.length<2 || isNaN(duration) || duration<=0){
+    document.getElementById("duckResult").innerText="Add at least 2 names and valid duration!";
     return;
   }
 
   cancelAnimationFrame(raceAnimation);
 
-  const raceTrack = document.getElementById("raceTrack");
-  raceTrack.innerHTML = "";
-  document.getElementById("duckResult").innerText = "";
+  const raceTrack=document.getElementById("raceTrack");
+  raceTrack.innerHTML="";
+  document.getElementById("duckResult").innerText="";
 
-  const trackWidth = raceTrack.clientWidth;
-  const finishLineWidth = 5;
+  const trackWidth=raceTrack.clientWidth;
+  const finishLineWidth=5;
 
-  const finishLine = document.createElement("div");
-  finishLine.className = "finish-line";
+  const finishLine=document.createElement("div");
+  finishLine.className="finish-line";
   raceTrack.appendChild(finishLine);
 
-  racePlayers = players.map((player) => {
-    const lane = document.createElement("div");
-    lane.className = "lane";
+  racePlayers=players.map(player=>{
+    const lane=document.createElement("div");
+    lane.className="lane";
 
-    const container = document.createElement("div");
-    container.className = "duckContainer";
-    container.style.left = "0px";
+    const container=document.createElement("div");
+    container.className="duckContainer";
+    container.style.left="0px";
 
-    const duck = document.createElement("div");
-    duck.className = "duck";
-    duck.innerText = "🦆";
+    const duck=document.createElement("div");
+    duck.className="duck";
+    duck.innerText="🦆";
 
-    const name = document.createElement("div");
-    name.innerText = player;
-    name.style.color = getRandomColor();
-    name.style.fontWeight = "bold";
-    name.style.position = "absolute";
-    name.style.left = "-200px";
-    name.style.whiteSpace = "nowrap";
+    const name=document.createElement("div");
+    name.className="duckName";
+    name.innerText=player;
+    name.style.color=getRandomColor();
 
     container.appendChild(name);
     container.appendChild(duck);
@@ -249,50 +316,49 @@ function startTimedDuckRace() {
     return {
       name,
       container,
-      currentLeft: 0,
-      baseSpeed: (trackWidth - finishLineWidth) / (duration * 60),
-      dynamicSpeed: 1 + Math.random() * 0.4
+      currentLeft:0,
+      baseSpeed:(trackWidth-finishLineWidth-40)/(duration*60),
+      dynamicSpeed:1+Math.random()*0.4
     };
   });
 
-  let raceFinished = false;
+  let raceFinished=false;
 
-  function animate() {
-    if (raceFinished) return;
-    let winner = null;
+  function animate(){
+    if(raceFinished) return;
+    let winner=null;
 
-    racePlayers.forEach(p => {
-      // gradually vary speed to simulate race twists
-      p.dynamicSpeed += (Math.random() - 0.5) * 0.02; 
-      p.dynamicSpeed = Math.max(0.5, Math.min(1.5, p.dynamicSpeed));
+    racePlayers.forEach(p=>{
+      p.dynamicSpeed+=(Math.random()-0.5)*0.02;
+      p.dynamicSpeed=Math.max(0.5,Math.min(1.5,p.dynamicSpeed));
 
-      p.currentLeft += p.baseSpeed * p.dynamicSpeed;
-      const maxLeft = trackWidth - finishLineWidth - 40;
-      if (p.currentLeft >= maxLeft && !winner) {
-        p.currentLeft = maxLeft;
-        winner = p.name.innerText;
-        raceFinished = true;
+      p.currentLeft+=p.baseSpeed*p.dynamicSpeed;
+      const maxLeft=trackWidth-finishLineWidth-40;
+      if(p.currentLeft>=maxLeft && !winner){
+        p.currentLeft=maxLeft;
+        winner=p.name.innerText;
+        raceFinished=true;
       }
-      p.container.style.left = p.currentLeft + "px";
+      p.container.style.left=p.currentLeft+"px";
     });
 
-    if (winner) {
-      document.getElementById("duckResult").innerText = "🏆 Winner is: " + winner + "!";
+    if(winner){
+      document.getElementById("duckResult").innerText="🏆 Winner is: "+winner+"!";
     } else {
-      raceAnimation = requestAnimationFrame(animate);
+      raceAnimation=requestAnimationFrame(animate);
     }
   }
 
-  raceAnimation = requestAnimationFrame(animate);
+  raceAnimation=requestAnimationFrame(animate);
 }
 
-function resetDuckRace() {
+function resetDuckRace(){
   cancelAnimationFrame(raceAnimation);
-  racePlayers.forEach(p => {
-    p.currentLeft = 0;
-    p.container.style.left = "0px";
+  racePlayers.forEach(p=>{
+    p.currentLeft=0;
+    p.container.style.left="0px";
   });
-  document.getElementById("duckResult").innerText = "";
+  document.getElementById("duckResult").innerText="";
 }
 </script>
 </body>
