@@ -9,14 +9,23 @@
     font-family: Arial, sans-serif;
     text-align: center;
     margin: 0;
-    padding: 0 0 50px 0;
+    padding: 0;
     background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
+  
+  main {
+    flex: 1; /* takes remaining space so footer goes to bottom */
+  }
+
   header {
     background: #111827;
     color: white;
     padding: 20px;
   }
+  
   nav button {
     margin: 5px;
     padding: 10px 20px;
@@ -24,10 +33,12 @@
     border-radius: 8px;
     cursor: pointer;
   }
+  
   nav button.active {
     background: #2563eb;
     color: white;
   }
+  
   section {
     display: none;
     padding: 20px;
@@ -45,10 +56,12 @@
     cursor: pointer;
     font-size: 16px;
   }
+  
   .result {
     font-size: 24px;
     margin-top: 20px;
   }
+  
   input {
     padding: 8px;
     width: 60%;
@@ -59,7 +72,7 @@
   #raceTrack {
     margin-top: 20px;
     position: relative;
-    width: 80vw;
+    width: 70vw;
     max-width: 1000px;
     min-width: 360px;
     margin-left: auto;
@@ -138,37 +151,39 @@
   </nav>
 </header>
 
-<section id="dice" class="active">
-  <h2>Dice Roller 🎲</h2>
-  <button class="action" onclick="rollDice(6)">Roll a d6</button>
-  <button class="action" onclick="rollDice(20)">Roll a d20</button>
-  <button class="action" onclick="rollCustomDice()">Custom Dice</button>
-  <br>
-  <input type="number" id="customSides" placeholder="Enter sides (e.g. 10)">
-  <div class="result" id="diceResult"></div>
-</section>
-
-<section id="coin">
-  <h2>Coin Flip 🪙</h2>
-  <button class="action" onclick="flipCoin()">Flip Coin</button>
-  <div id="coinContainer">🪙</div>
-  <div class="result" id="coinResult"></div>
-</section>
-
-<section id="duck">
-  <h2>Duck Race 🦆</h2>
-  <input id="names" placeholder="Enter names separated by commas">
-  <br>
-  <input type="number" id="raceDuration" placeholder="Race duration in seconds" value="5">
-  <br>
-  <button class="action" onclick="startTimedDuckRace()">Start</button>
-  <button class="action" onclick="resetDuckRace()">Reset</button>
-  <div id="raceTrack"></div>
-  <div class="result" id="duckResult"></div>
-</section>
+<main>
+  <section id="dice" class="active">
+    <h2>Dice Roller 🎲</h2>
+    <button class="action" onclick="rollDice(6)">Roll a d6</button>
+    <button class="action" onclick="rollDice(20)">Roll a d20</button>
+    <button class="action" onclick="rollCustomDice()">Custom Dice</button>
+    <br>
+    <input type="number" id="customSides" placeholder="Enter sides (e.g. 10)">
+    <div class="result" id="diceResult"></div>
+  </section>
+  
+  <section id="coin">
+    <h2>Coin Flip 🪙</h2>
+    <button class="action" onclick="flipCoin()">Flip Coin</button>
+    <div id="coinContainer">🪙</div>
+    <div class="result" id="coinResult"></div>
+  </section>
+  
+  <section id="duck">
+    <h2>Duck Race 🦆</h2>
+    <input id="names" placeholder="Enter names separated by commas">
+    <br>
+    <input type="number" id="raceDuration" placeholder="Race duration in seconds" value="5">
+    <br>
+    <button class="action" onclick="startTimedDuckRace()">Start</button>
+    <button class="action" onclick="resetDuckRace()">Reset</button>
+    <div id="raceTrack"></div>
+    <div class="result" id="duckResult"></div>
+  </section>
+</main>
 
 <footer>
-  Version 0.22
+  Version 0.23
 </footer>
 
 <script>
