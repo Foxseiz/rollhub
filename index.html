@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Roll Hub</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: #f9fafb; padding-bottom: 40px; /* space for footer */ }
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: #f9fafb; padding-bottom: 50px; }
     header { background: #111827; color: white; padding: 20px; }
     nav button { margin: 5px; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
     nav button.active { background: #2563eb; color: white; }
@@ -15,7 +15,6 @@
     .result { font-size: 24px; margin-top: 20px; }
     input { padding: 8px; width: 60%; border-radius: 6px; border: 1px solid #ccc; }
 
-    /* Duck Race Styles */
     #raceTrack {
       margin-top: 20px;
       position: relative;
@@ -31,7 +30,7 @@
       position: relative;
       height: 50px;
       border-bottom: 1px dashed #ccc;
-      overflow: visible; /* allows names to overflow left side */
+      overflow: visible;
     }
 
     .duckContainer {
@@ -48,7 +47,7 @@
 
     .duckContainer .duck {
       font-size: 28px;
-      transform: scaleX(-1); /* facing right */
+      transform: scaleX(-1);
     }
 
     .finish-line {
@@ -60,12 +59,10 @@
       background: red;
     }
 
-    /* Coin Flip */
     #coinContainer { margin-top: 20px; font-size: 50px; display: inline-block; }
     @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(720deg); } }
     .spin { animation: spin 2s linear; }
 
-    /* Footer */
     footer {
       position: fixed;
       bottom: 0;
@@ -87,7 +84,6 @@
     </nav>
   </header>
 
-  <!-- Dice Roller -->
   <section id="dice" class="active">
     <h2>Dice Roller 🎲</h2>
     <button class="action" onclick="rollDice(6)">Roll a d6</button>
@@ -98,7 +94,6 @@
     <div class="result" id="diceResult"></div>
   </section>
 
-  <!-- Coin Flip -->
   <section id="coin">
     <h2>Coin Flip 🪙</h2>
     <button class="action" onclick="flipCoin()">Flip Coin</button>
@@ -106,7 +101,6 @@
     <div class="result" id="coinResult"></div>
   </section>
 
-  <!-- Duck Race -->
   <section id="duck">
     <h2>Duck Race 🦆</h2>
     <input id="names" placeholder="Enter names separated by commas">
@@ -114,6 +108,7 @@
     <input type="number" id="raceDuration" placeholder="Race duration in seconds" value="5">
     <br>
     <button class="action" onclick="startTimedDuckRace()">Start Timed Race</button>
+    <button class="action" onclick="resetDuckRace()">Reset Race</button>
     <div id="raceTrack"></div>
     <div class="result" id="duckResult"></div>
   </section>
@@ -123,7 +118,8 @@
   </footer>
 
   <script>
-    // --- Navigation ---
+    let raceInterval = null;
+
     function showTab(tab) {
       document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
@@ -131,7 +127,6 @@
       document.getElementById(tab + 'Tab').classList.add('active');
     }
 
-    // --- Dice Roller ---
     function rollDice(sides) {
       const roll = Math.floor(Math.random() * sides) + 1;
       document.getElementById("diceResult").innerText = `You rolled: ${roll}`;
@@ -146,7 +141,6 @@
       rollDice(sides);
     }
 
-    // --- Coin Flip ---
     function flipCoin() {
       const coinContainer = document.getElementById("coinContainer");
       const coinResult = document.getElementById("coinResult");
@@ -160,7 +154,6 @@
       }, 2000);
     }
 
-    // --- Duck Race ---
     const duckColors = ["#f87171","#facc15","#34d399","#60a5fa","#a78bfa","#fb923c","#f472b6","#4ade80"];
 
     function getRandomColor() {
@@ -218,6 +211,8 @@
         return;
       }
 
+      if (raceInterval) clearInterval(raceInterval);
+
       const raceTrack = document.getElementById("raceTrack");
       raceTrack.innerHTML = "";
       document.getElementById("duckResult").innerText = "";
@@ -264,19 +259,23 @@
       let tickCount = 0;
       const totalTicks = duration * 30;
 
-      const raceInterval = setInterval(() => {
+      raceInterval = setInterval(() => {
         let raceFinished = false;
 
         players.forEach((_, i) => {
           const container = document.getElementById("duckContainer" + i);
           let currentLeft = parseFloat(container.style.left) || 0;
+        
+          const duckWidth = container.querySelector(".duck").offsetWidth;
           const twist = (Math.random() - 0.5) * 3;
-          const newLeft = Math.min(currentLeft + baseSpeed * speeds[i] + twist, trackWidth - finishLineWidth - 40);
+          const newLeft = Math.min(currentLeft + baseSpeed * speeds[i] + twist, trackWidth - finishLineWidth - duckWidth);
+        
           container.style.left = newLeft + "px";
-
-          if (newLeft >= trackWidth - finishLineWidth - 40 && !raceFinished) {
+        
+          if (newLeft >= trackWidth - finishLineWidth - duckWidth && !raceFinished) {
             raceFinished = true;
             clearInterval(raceInterval);
+            raceInterval = null;
             document.getElementById("duckResult").innerText = "🏆 Winner is: " + players[i] + "!";
           }
         });
@@ -292,11 +291,24 @@
           });
           document.getElementById("duckResult").innerText = "🏆 Winner is: " + players[winnerIndex] + "!";
           clearInterval(raceInterval);
+          raceInterval = null;
         }
       }, 1000 / 30);
     }
 
-    // Initialize preview
+    function resetDuckRace() {
+      if (raceInterval) {
+        clearInterval(raceInterval);
+        raceInterval = null;
+      }
+      const players = document.getElementById("names").value.split(",").map(p => p.trim()).filter(Boolean);
+      players.forEach((_, i) => {
+        const container = document.getElementById("duckContainer" + i);
+        if (container) container.style.left = "0px";
+      });
+      document.getElementById("duckResult").innerText = "";
+    }
+
     updateDuckPreview();
   </script>
 </body>
