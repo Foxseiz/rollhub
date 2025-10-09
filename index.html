@@ -1,278 +1,402 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Duck Race & Coin Flip</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🎲 Foxseiz Roll Hub 🎲</title>
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f8fafc;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      align-items: center;
-    }
+    /* basic page */
+    html, body { height: 100%; margin: 0; }
+    body { font-family: Arial, sans-serif; background: #f9fafb; color: #111827; display: flex; flex-direction: column; min-height: 100vh; }
 
-    main {
-      flex: 1;
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1rem;
-      box-sizing: border-box;
-    }
+    header { background: #111827; color: white; padding: 18px; text-align: center; }
+    nav { margin-top: 8px; }
+    nav button { margin: 4px; padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; }
+    nav button.active { background: #2563eb; color: white; }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
+    main { flex: 1; padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
 
+    /* sections */
+    section { width: 100%; max-width: 1000px; margin-bottom: 20px; }
+    .controls { margin-bottom: 12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:center; }
+    input[type="text"], input[type="number"] { padding:8px; border-radius:6px; border:1px solid #ccc; width:60%; max-width:420px; box-sizing:border-box; }
+
+    .action { background:#2563eb; color:white; padding:10px 16px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
+    .action:active { transform: translateY(1px); }
+
+    .result { margin-top:10px; font-size:18px; min-height:22px; }
+
+    /* track */
     #raceTrack {
-      position: relative;
       width: 80vw;
-      max-width: 900px;
-      min-width: 400px;
-      background: #e2e8f0;
-      border: 2px solid #94a3b8;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 20px;
-      height: auto;
-      padding: 10px;
-    }
-
-    .lane {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
+      max-width: 1000px;
+      min-width: 360px;
+      border: 2px solid #cbd5e1;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 8px;
+      box-sizing: border-box;
       position: relative;
-      border-bottom: 1px dashed #cbd5e1;
-      height: 50px;
+      overflow: visible;
+      min-height: 120px;
     }
+    .lane { position: relative; height: 50px; border-bottom: 1px dashed #d1d5db; display:block; overflow:visible; }
+    .duckContainer { position: absolute; left: 0; top: 50%; transform: translateY(-50%); display:flex; align-items:center; gap:8px; }
+    .duck { font-size: 28px; transform: scaleX(-1); }
+    .finishLine { position:absolute; right:8px; top:0; width:6px; height:100%; background:#ef4444; border-radius:2px; z-index:10; }
 
-    .lane:last-child {
-      border-bottom: none;
-    }
-
-    .duck {
-      font-size: 2rem;
-      transition: transform 0.1s linear;
-    }
-
-    .playerName {
-      font-weight: bold;
-      margin-right: 10px;
-      font-size: 1rem;
-      color: #334155;
-      white-space: nowrap;
-    }
-
-    .finishLine {
+    /* label appended to body so it won't push layout; styled here */
+    .name-label {
       position: absolute;
-      right: 10px;
-      top: 0;
-      width: 4px;
-      height: 100%;
-      background: red;
+      white-space: nowrap;
+      font-weight: 700;
+      pointer-events: none;
+      z-index: 9999;
+      font-size: 14px;
+      color: #111827;
+      background: rgba(255,255,255,0.0);
     }
 
-    button {
-      margin: 10px;
-      padding: 8px 14px;
-      border: none;
-      background-color: #2563eb;
-      color: white;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
+    /* coin */
+    #coinContainer { margin-top:8px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .coinFace {
+      width: 68px; height: 68px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:36px; background: white; box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      transform-style: preserve-3d; transition: transform 1.2s cubic-bezier(.2,.8,.2,1);
     }
+    .spin { transform: rotateY(1080deg); }
 
-    button:hover {
-      background-color: #1e40af;
-    }
-
-    #duckResult {
-      margin-top: 10px;
-      font-weight: bold;
-      color: #065f46;
-    }
-
-    footer {
-      text-align: center;
-      padding: 10px;
-      width: 100%;
-      background: #f1f5f9;
-      border-top: 1px solid #cbd5e1;
-      color: #475569;
-    }
-
-    /* Coin flip */
-    #coinContainer {
-      margin-top: 40px;
-      text-align: center;
-    }
-
-    #coin {
-      font-size: 3rem;
-      display: inline-block;
-      transition: transform 0.3s;
-    }
-
-    @keyframes flip {
-      0% { transform: rotateY(0); }
-      50% { transform: rotateY(180deg); }
-      100% { transform: rotateY(360deg); }
-    }
-
-    #coinResult {
-      margin-top: 10px;
-      font-size: 1.1rem;
-      font-weight: bold;
+    footer { padding: 12px 8px; text-align:center; background:#f1f5f9; border-top:1px solid #e2e8f0; color:#475569; }
+    @media (max-width:480px) {
+      input[type="text"], input[type="number"] { width: 86%; }
+      .coinFace { width:56px; height:56px; font-size:30px; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>🐥 Duck Race</h1>
-    <div>
-      <input type="text" id="playersInput" placeholder="Enter player names separated by commas" style="width:70%">
-      <button onclick="setupRace()">Setup Race</button>
-      <button onclick="startRace()">Start Race</button>
-      <button onclick="resetRace()">Reset</button>
-    </div>
-    <div id="raceTrack"></div>
-    <div id="duckResult"></div>
+  <header>
+    <h1>🎲 Foxseiz Roll Hub 🎲</h1>
+    <nav>
+      <button id="diceTab" class="active" onclick="showTab('dice')">Dice</button>
+      <button id="coinTab" onclick="showTab('coin')">Coin</button>
+      <button id="duckTab" onclick="showTab('duck')">Duck Race</button>
+    </nav>
+  </header>
 
-    <div id="coinContainer">
-      <h1>🪙 Coin Flip</h1>
-      <button onclick="flipCoin()">Flip Coin</button>
-      <div id="coin">🪙</div>
-      <div id="coinResult"></div>
-    </div>
+  <main>
+    <!-- DICE -->
+    <section id="dice" class="active">
+      <h2>Dice Roller 🎲</h2>
+      <div class="controls">
+        <button class="action" onclick="rollDice(6)">Roll d6</button>
+        <button class="action" onclick="rollDice(20)">Roll d20</button>
+        <input id="customSides" type="number" placeholder="Custom sides (e.g. 10)">
+        <button class="action" onclick="rollCustomDice()">Roll</button>
+      </div>
+      <div class="result" id="diceResult"></div>
+    </section>
+
+    <!-- COIN -->
+    <section id="coin">
+      <h2>Coin Flip 🪙</h2>
+      <div class="controls">
+        <button class="action" onclick="flipCoin()">Flip Coin</button>
+      </div>
+      <div id="coinContainer">
+        <div class="coinFace" id="coinFace">🪙</div>
+        <div class="result" id="coinResult"></div>
+      </div>
+    </section>
+
+    <!-- DUCK -->
+    <section id="duck">
+      <h2>Duck Race 🦆</h2>
+      <div class="controls">
+        <input id="names" type="text" placeholder="Enter names separated by commas">
+        <input id="raceDuration" type="number" placeholder="Duration (seconds)" value="5" min="1">
+      </div>
+      <div class="controls">
+        <button class="action" onclick="setupPreview()">Setup / Preview</button>
+        <button class="action" onclick="startTimedDuckRace()">Start Race</button>
+        <button class="action" onclick="resetDuckRace()">Reset Race</button>
+      </div>
+      <div id="raceTrack" aria-live="polite"></div>
+      <div class="result" id="duckResult"></div>
+    </section>
   </main>
 
-  <footer>Duck Race & Coin Flip v0.23</footer>
+  <footer>Version 0.23</footer>
 
-  <script>
-    let racePlayers = [];
-    let raceOngoing = false;
-    let raceAnimation;
+<script>
+/* ----------------------
+   Helpers & state
+   ---------------------- */
+let raf = null;
+let raceState = [];         // running race players
+let previewLabels = [];     // label nodes while previewing or racing
+const COLORS = ["#f87171","#facc15","#34d399","#60a5fa","#a78bfa","#fb923c","#f472b6","#4ade80"];
 
-    function setupRace() {
-      const raceTrack = document.getElementById("raceTrack");
-      raceTrack.innerHTML = "";
-      racePlayers = [];
-      const names = document.getElementById("playersInput").value
-        .split(",")
-        .map(n => n.trim())
-        .filter(n => n);
-      if (names.length === 0) return;
+function randColor(){ return COLORS[Math.floor(Math.random()*COLORS.length)]; }
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 
-      names.forEach((name, i) => {
-        const lane = document.createElement("div");
-        lane.classList.add("lane");
+/* ----------------------
+   Tabs
+   ---------------------- */
+function showTab(tab){
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  document.getElementById(tab + 'Tab')?.classList.add('active');
+}
 
-        const playerName = document.createElement("div");
-        playerName.classList.add("playerName");
-        playerName.textContent = name;
-        playerName.style.color = getRandomColor();
+/* ----------------------
+   Dice
+   ---------------------- */
+function rollDice(sides){
+  document.getElementById('diceResult').textContent = `You rolled: ${Math.floor(Math.random()*sides)+1}`;
+}
+function rollCustomDice(){
+  const s = parseInt(document.getElementById('customSides').value);
+  if (isNaN(s) || s < 2) { document.getElementById('diceResult').textContent = 'Enter valid sides (min 2)'; return; }
+  rollDice(s);
+}
 
-        const duck = document.createElement("div");
-        duck.classList.add("duck");
-        duck.textContent = "🦆";
+/* ----------------------
+   Coin (fixed)
+   ---------------------- */
+const coinFace = () => document.getElementById('coinFace');
+function flipCoin(){
+  const face = coinFace();
+  const resultEl = document.getElementById('coinResult');
+  resultEl.textContent = '';
+  // restart animation by toggling class
+  face.classList.remove('spin');
+  void face.offsetWidth; // reflow to allow restart
+  face.classList.add('spin');
 
-        lane.appendChild(playerName);
-        lane.appendChild(duck);
-        raceTrack.appendChild(lane);
+  setTimeout(() => {
+    face.classList.remove('spin');
+    // keep the coin emoji intact; show result below
+    const outcome = Math.random() < 0.5 ? 'Heads' : 'Tails';
+    resultEl.textContent = `Result: ${outcome}`;
+  }, 1200);
+}
 
-        racePlayers.push({
-          name,
-          duck,
-          playerName,
-          lane,
-          currentLeft: 0,
-          speed: 0,
-          momentum: 0
-        });
-      });
+/* ----------------------
+   Preview utilities
+   ---------------------- */
+function clearPreviewLabels(){
+  previewLabels.forEach(n => n.remove());
+  previewLabels = [];
+}
+function createLabel(text, color){
+  const n = document.createElement('div');
+  n.className = 'name-label';
+  n.textContent = text;
+  n.style.color = color || '#111827';
+  document.body.appendChild(n);
+  previewLabels.push(n);
+  return n;
+}
+function positionLabel(labelNode, containerEl, gap=8){
+  const containerRect = containerEl.getBoundingClientRect();
+  const trackRect = document.getElementById('raceTrack').getBoundingClientRect();
+  const nameW = labelNode.offsetWidth;
+  // place left of the container, but clamp so it never goes off-screen (8px margin)
+  let desiredLeft = (containerRect.left + window.scrollX) - nameW - gap;
+  const minLeft = Math.max(8 + window.scrollX, trackRect.left + window.scrollX + 8); // ensure not off left of page or track
+  desiredLeft = Math.max(desiredLeft, minLeft);
+  // vertical center of lane
+  const desiredTop = (containerRect.top + window.scrollY) + (containerRect.height/2) - (labelNode.offsetHeight/2);
+  labelNode.style.left = Math.round(desiredLeft) + 'px';
+  labelNode.style.top = Math.round(desiredTop) + 'px';
+}
 
-      const finishLine = document.createElement("div");
-      finishLine.classList.add("finishLine");
-      raceTrack.appendChild(finishLine);
-    }
+/* ----------------------
+   Preview (live) - Setup lanes and labels
+   ---------------------- */
+function setupPreview(){
+  clearRaceAnimation(); // stop anything running
+  clearPreviewLabels();
+  const raw = document.getElementById('names').value;
+  const players = raw.split(',').map(s=>s.trim()).filter(Boolean);
+  const displayPlayers = players.length ? players : ['Player 1','Player 2'];
 
-    function getRandomColor() {
-      const colors = ["#dc2626", "#2563eb", "#059669", "#b45309", "#9333ea", "#0891b2"];
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
+  const track = document.getElementById('raceTrack');
+  track.innerHTML = '';
+  // finish line
+  const finish = document.createElement('div');
+  finish.className = 'finishLine';
+  track.appendChild(finish);
 
-    function startRace() {
-      if (raceOngoing || racePlayers.length === 0) return;
-      raceOngoing = true;
-      const raceTrack = document.getElementById("raceTrack");
-      const trackWidth = raceTrack.clientWidth - 80; // 80 offset for padding and finish line
-      const winnerText = document.getElementById("duckResult");
-      winnerText.textContent = "";
-      let winner = null;
+  displayPlayers.forEach((p,i) => {
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+    const container = document.createElement('div');
+    container.className = 'duckContainer';
+    container.style.left = '0px';
+    const duck = document.createElement('div'); duck.className = 'duck'; duck.textContent = '🦆';
+    container.appendChild(duck);
+    lane.appendChild(container);
+    track.appendChild(lane);
 
-      function animate() {
-        let allFinished = false;
-        racePlayers.forEach(p => {
-          // random acceleration/deceleration for realism
-          p.momentum += (Math.random() - 0.5) * 0.3;
-          p.momentum = Math.max(Math.min(p.momentum, 3), -1);
-          p.speed = 2 + Math.random() * 2 + p.momentum;
+    // create label as body node and position it
+    const color = randColor();
+    const label = createLabel(p, color);
+    // position after next paint
+    requestAnimationFrame(()=> positionLabel(label, container));
+  });
+}
 
-          p.currentLeft += p.speed;
-          if (p.currentLeft >= trackWidth) {
-            p.currentLeft = trackWidth;
-            if (!winner) winner = p;
-            allFinished = true;
-          }
+/* ensure preview updates while typing */
+document.getElementById('names').addEventListener('input', setupPreview);
+setupPreview(); // initial
 
-          p.duck.style.transform = `translateX(${p.currentLeft}px)`;
-          p.playerName.style.transform = `translateX(${p.currentLeft}px)`;
-        });
+/* ----------------------
+   Race: smooth movement + surges
+   ---------------------- */
+function clearRaceAnimation(){
+  if (raf) { cancelAnimationFrame(raf); raf = null; }
+}
+function startTimedDuckRace(){
+  clearRaceAnimation();
+  clearPreviewLabels();
 
-        if (allFinished) {
-          raceOngoing = false;
-          cancelAnimationFrame(raceAnimation);
-          winnerText.textContent = `🏁 Winner: ${winner.name}!`;
-        } else {
-          raceAnimation = requestAnimationFrame(animate);
-        }
+  const raw = document.getElementById('names').value;
+  const players = raw.split(',').map(s=>s.trim()).filter(Boolean);
+  if (players.length < 2) { document.getElementById('duckResult').textContent = 'Enter at least 2 names'; return; }
+  const duration = parseFloat(document.getElementById('raceDuration').value);
+  if (isNaN(duration) || duration <= 0) { document.getElementById('duckResult').textContent = 'Enter valid duration'; return; }
+
+  const track = document.getElementById('raceTrack');
+  track.innerHTML = '';
+  const trackWidth = track.clientWidth;
+  const finishOffset = 8; // finish line padding
+
+  // add finish line
+  const finish = document.createElement('div');
+  finish.className = 'finishLine';
+  track.appendChild(finish);
+
+  // create race players state
+  raceState = players.map((name, idx) => {
+    const lane = document.createElement('div'); lane.className = 'lane';
+    const container = document.createElement('div'); container.className = 'duckContainer'; container.style.left = '0px';
+    const duck = document.createElement('div'); duck.className = 'duck'; duck.textContent = '🦆';
+    container.appendChild(duck);
+    lane.appendChild(container);
+    track.appendChild(lane);
+
+    // external label
+    const color = randColor();
+    const label = createLabel(name, color);
+
+    // speed units: px per second base (so duration seconds roughly gets them to end at baseSpeed)
+    const duckWidth = duck.offsetWidth || 36;
+    const travelPx = Math.max(20, trackWidth - finishOffset - duckWidth - 4);
+    const basePxPerSec = travelPx / duration;
+
+    return {
+      name,
+      container,
+      duck,
+      label,
+      currentLeft: 0,
+      basePxPerSec,
+      targetSpeedFactor: 1 + (Math.random() - 0.5) * 0.3, // target multiplier
+      speedFactor: 1 + (Math.random() - 0.5) * 0.3,      // current multiplier
+      boost: 0, // temporary surge
+      lastSurgeAt: 0
+    };
+  });
+
+  let winner = null;
+  let lastTime = null;
+
+  function step(timestamp){
+    if (!lastTime) lastTime = timestamp;
+    const dt = (timestamp - lastTime) / 1000; // seconds
+    lastTime = timestamp;
+
+    // small probability events per second
+    const surgeProbPerSec = 0.8; // on average 0.8 chance per second for each duck to change target
+    raceState.forEach(p => {
+      // occasionally change targetSpeedFactor to simulate surges/slowdowns
+      if (Math.random() < surgeProbPerSec * dt) {
+        p.targetSpeedFactor = 1 + (Math.random() - 0.5) * 0.8; // between ~0.6..1.4
       }
+      // ease speedFactor toward target
+      p.speedFactor += (p.targetSpeedFactor - p.speedFactor) * clamp(0.2 * dt * 60 / 60, 0, 0.3);
 
-      raceAnimation = requestAnimationFrame(animate);
+      // occasional boost (short-lived)
+      if (Math.random() < 0.06 * dt) { // rare spontaneous burst
+        p.boost = 0.6 + Math.random() * 1.0; // short boost multiplier
+        p.lastSurgeAt = timestamp;
+      }
+      // decay boost
+      p.boost *= Math.pow(0.92, dt * 60); // decay faster with dt
+
+      // compute move
+      const move = (p.basePxPerSec * (p.speedFactor + p.boost)) * dt;
+      p.currentLeft += move;
+
+      // ensure duck width considered
+      const duckW = p.duck.offsetWidth || 36;
+      const maxLeft = track.clientWidth - finishOffset - duckW - 2;
+
+      if (p.currentLeft >= maxLeft && !winner) {
+        p.currentLeft = maxLeft;
+        winner = p;
+      }
+      p.container.style.left = Math.round(p.currentLeft) + 'px';
+
+      // move/position label and keep visible (clamped)
+      positionLabel(p.label, p.container, 8);
+    });
+
+    // update UI when race finished
+    if (winner) {
+      document.getElementById('duckResult').textContent = '🏆 Winner is: ' + winner.name + '!';
+      clearRaceAnimation();
+      raf = null;
+      // keep labels (they remain attached)
+      return;
     }
 
-    function resetRace() {
-      cancelAnimationFrame(raceAnimation);
-      racePlayers.forEach(p => {
-        p.currentLeft = 0;
-        p.duck.style.transform = "translateX(0)";
-        p.playerName.style.transform = "translateX(0)";
-      });
-      document.getElementById("duckResult").textContent = "";
-      raceOngoing = false;
-    }
+    // continue
+    raf = requestAnimationFrame(step);
+  }
 
-    function flipCoin() {
-      const coin = document.getElementById("coin");
-      const resultDiv = document.getElementById("coinResult");
-      resultDiv.textContent = "";
-      coin.style.animation = "flip 1s infinite linear";
+  // start animation
+  document.getElementById('duckResult').textContent = '';
+  raf = requestAnimationFrame(step);
+}
 
-      setTimeout(() => {
-        coin.style.animation = "";
-        const result = Math.random() < 0.5 ? "Heads" : "Tails";
-        resultDiv.textContent = `🪙 Result: ${result}!`;
-      }, 2500);
-    }
-  </script>
+/* ----------------------
+   Reset
+   ---------------------- */
+function resetDuckRace(){
+  clearRaceAnimation();
+  // remove labels + clear track
+  clearPreviewLabels();
+  raceState.forEach(p => {
+    if (p.label) p.label.remove();
+    if (p.container) p.container.remove();
+  });
+  raceState = [];
+  document.getElementById('raceTrack').innerHTML = '';
+  document.getElementById('duckResult').textContent = '';
+  // rebuild preview so user sees lanes again
+  setupPreview();
+}
+
+/* ----------------------
+   init
+   ---------------------- */
+document.addEventListener('DOMContentLoaded', ()=> {
+  // initialize preview (keeps 2 lanes when empty)
+  setupPreview();
+});
+</script>
 </body>
 </html>
