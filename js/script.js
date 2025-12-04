@@ -265,12 +265,11 @@ const teamInputs = [
   document.getElementById("teamSizeInput")
 ];
 
-// Listen for Enter key
 teamInputs.forEach(input => {
   input.addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
-      e.preventDefault(); // prevent form submission or line break
-      document.getElementById("teamsTab").click(); // trigger button
+      e.preventDefault();
+      document.getElementById("randomizeBtn").click();
     }
   });
 });
