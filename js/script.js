@@ -257,3 +257,20 @@ function randomizeTeams() {
 
   document.getElementById("teamResults").innerHTML = output;
 }
+
+// Get all inputs inside the Team Randomizer section
+const teamInputs = [
+  document.getElementById("leadersInput"),
+  document.getElementById("membersInput"),
+  document.getElementById("teamSizeInput")
+];
+
+// Listen for Enter key
+teamInputs.forEach(input => {
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault(); // prevent form submission or line break
+      document.getElementById("teamsTab").click(); // trigger button
+    }
+  });
+});
