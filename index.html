@@ -403,34 +403,44 @@ function startTimedDuckRace() {
       return;
     }
   
-    // Shuffle members
+    // Shuffle members for randomness
     const shuffled = members.sort(() => Math.random() - 0.5);
   
-    // Prepare result container
+    // Prepare team containers
     const teams = {};
-    leaders.forEach(l => teams[l] = []);
+    const maxMembersPerTeam = {}; // includes leader in team size
+    leaders.forEach(l => {
+      teams[l] = [];
+      maxMembersPerTeam[l] = isNaN(teamSize) ? Infinity : Math.max(0, teamSize - 1);
+      // teamSize - 1 because the leader counts as 1
+    });
   
-    // --- Mode 1: Users specify team size ---
+    const undrafted = [];
+  
+    // --- Mode 1: User specified team size ---
     if (!isNaN(teamSize) && teamSize > 0) {
       let leaderIndex = 0;
   
       shuffled.forEach(member => {
-        // Find the next leader who is not full
         let assigned = false;
+  
+        // Try each leader until we find one with space
         for (let i = 0; i < leaders.length; i++) {
           const leader = leaders[(leaderIndex + i) % leaders.length];
-          if (teams[leader].length < teamSize) {
+  
+          if (teams[leader].length < maxMembersPerTeam[leader]) {
             teams[leader].push(member);
             leaderIndex = (leaderIndex + i + 1) % leaders.length;
             assigned = true;
             break;
           }
         }
-        // If all teams are full, extra members will be unassigned
+  
+        if (!assigned) undrafted.push(member);
       });
   
     } else {
-      // --- Mode 2: No team size given → even distribution ---
+      // --- Mode 2: No team size → even distribution ---
       let i = 0;
       shuffled.forEach(member => {
         const leader = leaders[i % leaders.length];
@@ -441,11 +451,17 @@ function startTimedDuckRace() {
   
     // Build output
     let output = "";
-    for (const leader of leaders) {
-      output += `<strong>${leader}</strong><br>`;
+  
+    leaders.forEach(leader => {
+      output += `<strong>${leader}</strong> (Leader)<br>`;
       output += teams[leader].length
         ? teams[leader].join(", ") + "<br><br>"
-        : "(No members assigned)<br><br>";
+        : "(No members)<br><br>";
+    });
+  
+    // Show undrafted players (if any)
+    if (undrafted.length > 0) {
+      output += `<strong>Not in a team:</strong><br>${undrafted.join(", ")}`;
     }
   
     document.getElementById("teamResults").innerHTML = output;
