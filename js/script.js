@@ -199,11 +199,10 @@ function randomizeTeams() {
 
   // Prepare team containers
   const teams = {};
-  const maxMembersPerTeam = {}; // includes leader in team size
+  const maxMembersPerTeam = {}; // includes leader
   leaders.forEach(l => {
     teams[l] = [];
     maxMembersPerTeam[l] = isNaN(teamSize) ? Infinity : Math.max(0, teamSize - 1);
-    // teamSize - 1 because the leader counts as 1
   });
 
   const undrafted = [];
@@ -215,7 +214,6 @@ function randomizeTeams() {
     shuffled.forEach(member => {
       let assigned = false;
 
-      // Try each leader until we find one with space
       for (let i = 0; i < leaders.length; i++) {
         const leader = leaders[(leaderIndex + i) % leaders.length];
 
@@ -250,7 +248,6 @@ function randomizeTeams() {
       : "(No members)<br><br>";
   });
 
-  // Show undrafted players (if any)
   if (undrafted.length > 0) {
     output += `<strong>Not in a team:</strong><br>${undrafted.join(", ")}`;
   }
@@ -258,18 +255,21 @@ function randomizeTeams() {
   document.getElementById("teamResults").innerHTML = output;
 }
 
-// Get all inputs inside the Team Randomizer section
-const teamInputs = [
-  document.getElementById("leadersInput"),
-  document.getElementById("membersInput"),
-  document.getElementById("teamSizeInput")
-];
+// --- Enter key triggers randomizer ---
+document.addEventListener("DOMContentLoaded", () => {
+  const teamInputs = [
+    document.getElementById("leadersInput"),
+    document.getElementById("membersInput"),
+    document.getElementById("teamSizeInput")
+  ];
 
-teamInputs.forEach(input => {
-  input.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      document.getElementById("randomizeBtn").click();
-    }
+  teamInputs.forEach(input => {
+    input.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("randomizeBtn").click(); // triggers randomizeTeams()
+      }
+    });
   });
 });
+
