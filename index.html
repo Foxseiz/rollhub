@@ -148,6 +148,7 @@
     <button onclick="showTab('dice')" id="diceTab" class="active">Dice</button>
     <button onclick="showTab('coin')" id="coinTab">Coin</button>
     <button onclick="showTab('duck')" id="duckTab">Duck Race</button>
+    <button onclick="showTab('teams')" id="teamsTab">Team Randomizer</button>
   </nav>
 </header>
 
@@ -157,7 +158,6 @@
     <button class="action" onclick="rollDice(6)">Roll a d6</button>
     <button class="action" onclick="rollDice(20)">Roll a d20</button>
     <button class="action" onclick="rollCustomDice()">Custom Dice</button>
-    <button onclick="showTab('teams')" id="teamsTab">Team Randomizer</button>
     <br>
     <input type="number" id="customSides" placeholder="Enter sides (e.g. 10)">
     <div class="result" id="diceResult"></div>
@@ -183,22 +183,27 @@
   </section>
 
   <section id="teams">
-    <h2>Team Randomizer 👥</h2>
-  
+    <h2>Team Randomizer</h2>
+    
     <h3>Leaders</h3>
     <input id="leadersInput" placeholder="Enter leaders separated by commas">
-  
+    
     <h3>Members</h3>
     <input id="membersInput" placeholder="Enter members separated by commas">
-  
+    
+    <h3>Players per Team (optional)</h3>
+    <input id="teamSizeInput" type="number" min="1" placeholder="Leave blank for auto-divide">
+    
     <br><br>
     <button class="action" onclick="randomizeTeams()">Randomize Teams</button>
+    
     <div class="result" id="teamResults"></div>
   </section>
+
 </main>
 
 <footer>
-  Version 0.24
+  Version 0.25
 </footer>
 
 <script>
@@ -369,58 +374,82 @@ function startTimedDuckRace() {
   raceAnimation = requestAnimationFrame(animate);
 }
 
-function resetDuckRace() {
-  cancelAnimationFrame(raceAnimation);
-  racePlayers.forEach(p => {
-    p.currentLeft = 0;
-    p.container.style.left = "0px";
-  });
-  document.getElementById("duckResult").innerText = "";
-}
+  function resetDuckRace() {
+    cancelAnimationFrame(raceAnimation);
+    racePlayers.forEach(p => {
+      p.currentLeft = 0;
+      p.container.style.left = "0px";
+    });
+    document.getElementById("duckResult").innerText = "";
+  }
 
+  // Team Randomizer Script //
   function randomizeTeams() {
-  const leaders = document.getElementById("leadersInput").value
-    .split(",")
-    .map(x => x.trim())
-    .filter(Boolean);
-
-  const members = document.getElementById("membersInput").value
-    .split(",")
-    .map(x => x.trim())
-    .filter(Boolean);
-
-  if (leaders.length < 1 || members.length < 1) {
-    document.getElementById("teamResults").innerHTML =
-      "Please enter at least 1 leader and 1 member.";
-    return;
+    const leaders = document.getElementById("leadersInput").value
+      .split(",")
+      .map(x => x.trim())
+      .filter(Boolean);
+  
+    const members = document.getElementById("membersInput").value
+      .split(",")
+      .map(x => x.trim())
+      .filter(Boolean);
+  
+    const teamSize = parseInt(document.getElementById("teamSizeInput").value);
+  
+    if (leaders.length < 1 || members.length < 1) {
+      document.getElementById("teamResults").innerHTML =
+        "Please enter at least 1 leader and 1 member.";
+      return;
+    }
+  
+    // Shuffle members
+    const shuffled = members.sort(() => Math.random() - 0.5);
+  
+    // Prepare result container
+    const teams = {};
+    leaders.forEach(l => teams[l] = []);
+  
+    // --- Mode 1: Users specify team size ---
+    if (!isNaN(teamSize) && teamSize > 0) {
+      let leaderIndex = 0;
+  
+      shuffled.forEach(member => {
+        // Find the next leader who is not full
+        let assigned = false;
+        for (let i = 0; i < leaders.length; i++) {
+          const leader = leaders[(leaderIndex + i) % leaders.length];
+          if (teams[leader].length < teamSize) {
+            teams[leader].push(member);
+            leaderIndex = (leaderIndex + i + 1) % leaders.length;
+            assigned = true;
+            break;
+          }
+        }
+        // If all teams are full, extra members will be unassigned
+      });
+  
+    } else {
+      // --- Mode 2: No team size given → even distribution ---
+      let i = 0;
+      shuffled.forEach(member => {
+        const leader = leaders[i % leaders.length];
+        teams[leader].push(member);
+        i++;
+      });
+    }
+  
+    // Build output
+    let output = "";
+    for (const leader of leaders) {
+      output += `<strong>${leader}</strong><br>`;
+      output += teams[leader].length
+        ? teams[leader].join(", ") + "<br><br>"
+        : "(No members assigned)<br><br>";
+    }
+  
+    document.getElementById("teamResults").innerHTML = output;
   }
-
-  // Shuffle members
-  const shuffled = members.sort(() => Math.random() - 0.5);
-
-  // Create buckets for leaders
-  const teams = {};
-  leaders.forEach(l => teams[l] = []);
-
-  // Distribute members round-robin
-  let i = 0;
-  shuffled.forEach(member => {
-    const leader = leaders[i % leaders.length];
-    teams[leader].push(member);
-    i++;
-  });
-
-  // Build output
-  let output = "";
-  for (const leader of leaders) {
-    output += `<strong>${leader}</strong><br>`;
-    output += teams[leader].length
-      ? teams[leader].join(", ") + "<br><br>"
-      : "(No members assigned)<br><br>";
-  }
-
-  document.getElementById("teamResults").innerHTML = output;
-}
 
 </script>
 </body>
