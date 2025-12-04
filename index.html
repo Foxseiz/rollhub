@@ -157,6 +157,7 @@
     <button class="action" onclick="rollDice(6)">Roll a d6</button>
     <button class="action" onclick="rollDice(20)">Roll a d20</button>
     <button class="action" onclick="rollCustomDice()">Custom Dice</button>
+    <button onclick="showTab('teams')" id="teamsTab">Team Randomizer</button>
     <br>
     <input type="number" id="customSides" placeholder="Enter sides (e.g. 10)">
     <div class="result" id="diceResult"></div>
@@ -180,10 +181,24 @@
     <div id="raceTrack"></div>
     <div class="result" id="duckResult"></div>
   </section>
+
+  <section id="teams">
+    <h2>Team Randomizer 👥</h2>
+  
+    <h3>Leaders</h3>
+    <input id="leadersInput" placeholder="Enter leaders separated by commas">
+  
+    <h3>Members</h3>
+    <input id="membersInput" placeholder="Enter members separated by commas">
+  
+    <br><br>
+    <button class="action" onclick="randomizeTeams()">Randomize Teams</button>
+    <div class="result" id="teamResults"></div>
+  </section>
 </main>
 
 <footer>
-  Version 0.23
+  Version 0.24
 </footer>
 
 <script>
@@ -362,6 +377,51 @@ function resetDuckRace() {
   });
   document.getElementById("duckResult").innerText = "";
 }
+
+  function randomizeTeams() {
+  const leaders = document.getElementById("leadersInput").value
+    .split(",")
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  const members = document.getElementById("membersInput").value
+    .split(",")
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  if (leaders.length < 1 || members.length < 1) {
+    document.getElementById("teamResults").innerHTML =
+      "Please enter at least 1 leader and 1 member.";
+    return;
+  }
+
+  // Shuffle members
+  const shuffled = members.sort(() => Math.random() - 0.5);
+
+  // Create buckets for leaders
+  const teams = {};
+  leaders.forEach(l => teams[l] = []);
+
+  // Distribute members round-robin
+  let i = 0;
+  shuffled.forEach(member => {
+    const leader = leaders[i % leaders.length];
+    teams[leader].push(member);
+    i++;
+  });
+
+  // Build output
+  let output = "";
+  for (const leader of leaders) {
+    output += `<strong>${leader}</strong><br>`;
+    output += teams[leader].length
+      ? teams[leader].join(", ") + "<br><br>"
+      : "(No members assigned)<br><br>";
+  }
+
+  document.getElementById("teamResults").innerHTML = output;
+}
+
 </script>
 </body>
 </html>
